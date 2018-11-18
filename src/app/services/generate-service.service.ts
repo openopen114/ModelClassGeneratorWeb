@@ -1,0 +1,200 @@
+import { Injectable } from '@angular/core';
+import * as _ from 'lodash';
+
+ 
+import * as beautify from 'js-beautify';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class GenerateServiceService {
+
+
+	genResult:string;
+	isExtend:boolean; 
+	config;
+
+	constructor() { }
+
+
+
+	generateModel(_jsonStr){
+		this.config = JSON.parse(_jsonStr);
+		this.genResult = '';
+
+
+		const extendClass = _.get(this.config, 'extendClass');
+		const dbRestrict = _.get(this.config, 'dbRestrict');
+		const modelName = _.get(this.config, 'modelName');
+
+
+		this.genResult += this.genImport(extendClass);
+		this.genResult += this.genFields(dbRestrict);
+		this.genResult += this.genClassName(modelName, extendClass);
+		this.genResult += this.genGetterAndSetter(dbRestrict);
+		this.genResult += '}'
+
+
+		console.log('this.genResult');
+		console.log(this.genResult);
+
+		console.log(beautify.js_beautify(this.genResult));
+
+
+		this.genResult = beautify.js_beautify(this.genResult);
+
+		return this.genResult;
+	}
+
+
+
+	/***************************/
+	/***** generate Import *****/
+	/***************************/
+	genImport(_extendClass){
+		
+		const result = `
+		${_extendClass? '': '//'} import ${_extendClass} from './${_.toLower(_extendClass)}';
+		`
+		return result;
+	}
+
+
+
+	/******************************/
+	/***** generate ClassName *****/
+	/******************************/
+
+	genClassName(_modelName, _extendClass){
+		let result = '';
+		let extend = (_extendClass) ? `extends ${_extendClass}` : ``;
+
+		result += `export class ${_modelName} ${extend}{`
+
+		result += `
+			constructor(_values){
+				${_extendClass? '': '//'} super(fields, _values)
+			}
+
+		`
+
+		return result;
+
+	}
+
+
+
+
+
+
+
+
+	/***************************/
+	/***** generate fields *****/
+	/***************************/
+	genFields(_dbRestrict){
+		let genFlow =  _.flow(this.getColNameValue, this.genFieldsItem)
+		let result = genFlow(_dbRestrict); 
+
+		return result;
+	} 
+
+	//get DB columnName 
+	getColNameValue(_dbRestrict){
+		return _dbRestrict.map(item => _.get(item, 'colName'));
+	}
+
+
+	//generate fields item i.e. itemNam: Symbol('itemNam')
+	genFieldsItem(_colNameValueArr){
+		let result = '';
+
+		result = `const fields = { `
+
+		//fileds body
+		_.each(_colNameValueArr, v => {
+			result += `	${v}:Symbol('${v}'),`
+		} )
+	
+		//trim the last ,
+		result = _.trim(result, ',')
+		result += `}`;
+
+		return result;
+	}
+
+
+
+	
+
+
+
+
+
+	/**********************************/
+	/***** generate getter setter *****/
+	/**********************************/
+
+
+
+	genGetterAndSetter(_dbRestrict){ 
+
+		let result = '';
+
+		_.each(_dbRestrict, item => {
+			 result += this.genSetter(item);
+			 result += this.genGetter(item);
+		})
+
+
+		console.log(result);
+
+		return result;
+	}
+
+
+ 
+
+
+	genSetter(_item){
+		let result = '';
+		const [colName, type, length] = [_.get(_item, 'colName'), _.get(_item, 'type'), _.get(_item, 'length')]; 
+		
+
+		result += `
+
+		/*** setter - ${colName} ***/
+		set ${colName}(value){
+			if(DataModel.is${type}(value) && value.length <= ${length}){
+				this[fields.${colName}] = value;
+			}
+
+		}
+		
+		`
+
+		return result;
+	}
+
+
+
+	genGetter(_item){
+		let result = '';
+		const [colName, type, length] = [_.get(_item, 'colName'), _.get(_item, 'type'), _.get(_item, 'length')]; 
+ 
+		result += `
+
+		/*** getter - ${colName} ***/
+		get ${colName}(){
+			const value = this[fields.${colName}] ;
+    		return DataModel.is${type}(value) ? value.toUpperCase(): value; 
+		}
+
+		`
+
+		return result;
+	}
+
+ 
+
+}
