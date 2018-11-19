@@ -21,18 +21,18 @@ export class DisplayCodeComponent implements OnInit, OnChanges {
 
 	}
 
-	ngOnInit() {
-		this.reloadHighlight();
+	ngOnInit() { 
 	}
 
 
-	ngOnChanges(changes) { 
+	ngOnChanges(changes) {  
 		this.reloadHighlight();		
 	}
 
 
 
-	reloadHighlight(){ 
+	reloadHighlight(){  
+
 		this.myCode = this.inputTextFromAppComp; 
 
 		let myCodeDiv = <HTMLElement> document.querySelector("#myCode");
