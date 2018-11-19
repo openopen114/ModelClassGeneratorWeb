@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
-
- 
 import * as beautify from 'js-beautify';
-
 @Injectable({
   providedIn: 'root'
 })
-export class GenerateServiceService {
+export class GenerateService {
+
 
 
 	genResult:string;
@@ -35,10 +33,10 @@ export class GenerateServiceService {
 		this.genResult += '}'
 
 
-		console.log('this.genResult');
-		console.log(this.genResult);
+		// console.log('this.genResult');
+		// console.log(this.genResult);
 
-		console.log(beautify.js_beautify(this.genResult));
+		// console.log(beautify.js_beautify(this.genResult));
 
 
 		this.genResult = beautify.js_beautify(this.genResult);
@@ -54,7 +52,8 @@ export class GenerateServiceService {
 	genImport(_extendClass){
 		
 		const result = `
-		${_extendClass? '': '//'} import ${_extendClass} from './${_.toLower(_extendClass)}';
+			import * as _ from 'lodash';
+			${_extendClass? '': '//'} import ${_extendClass} from './${_.toLower(_extendClass)}';
 		`
 		return result;
 	}
@@ -144,10 +143,7 @@ export class GenerateServiceService {
 		_.each(_dbRestrict, item => {
 			 result += this.genSetter(item);
 			 result += this.genGetter(item);
-		})
-
-
-		console.log(result);
+		}) 
 
 		return result;
 	}
@@ -161,11 +157,15 @@ export class GenerateServiceService {
 		const [colName, type, length] = [_.get(_item, 'colName'), _.get(_item, 'type'), _.get(_item, 'length')]; 
 		
 
+
+		const isStringCondition = `DataModel.isString(value) && value.length <= ${length}`;
+		const isIntCondition = `_.isInteger(value)`;
+
 		result += `
 
 		/*** setter - ${colName} ***/
 		set ${colName}(value){
-			if(DataModel.is${type}(value) && value.length <= ${length}){
+			if(${type == 'String' ? isStringCondition : isIntCondition}){
 				this[fields.${colName}] = value;
 			}
 
@@ -182,12 +182,14 @@ export class GenerateServiceService {
 		let result = '';
 		const [colName, type, length] = [_.get(_item, 'colName'), _.get(_item, 'type'), _.get(_item, 'length')]; 
  
+
+		let returnUpperCaseValue = `return DataModel.is${type}(value) ? value.toUpperCase(): value; `;
 		result += `
 
 		/*** getter - ${colName} ***/
 		get ${colName}(){
 			const value = this[fields.${colName}] ;
-    		return DataModel.is${type}(value) ? value.toUpperCase(): value; 
+    		${type == 'String' ?  returnUpperCaseValue : 'return value;'}
 		}
 
 		`
@@ -195,6 +197,5 @@ export class GenerateServiceService {
 		return result;
 	}
 
- 
 
 }

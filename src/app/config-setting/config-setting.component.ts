@@ -1,7 +1,8 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import * as beautify from 'js-beautify';
-import { GenerateServiceService } from '../services/generate-service.service';
+import { GenerateService } from '../services/generate.service';
  
+
 @Component({
   selector: 'app-config-setting',
   templateUrl: './config-setting.component.html',
@@ -15,32 +16,59 @@ export class ConfigSettingComponent implements OnInit {
 	@Output()
   	emitSpot = new EventEmitter;
 
-	constructor(private generateServiceService:GenerateServiceService) { }
+	constructor(private generateService:GenerateService) { }
 
 	ngOnInit() {
 
 		this.inputValue = `
-		{
-		   "modelName":"UserRole",
-		   "extendClass":"DataModel",
-		   "dbRestrict":[
-		      {
-		         "colName":"userId",
-		         "type":"String",
-		         "length":20
-		      },
-		      {
-		         "colName":"userName",
-		         "type":"String",
-		         "length":10
-		      },
-		      {
-		         "colName":"roleId",
-		         "type":"String",
-		         "length":30
-		      }
-		   ]
-		}
+			{
+			   "modelName":"UserRole",
+			   "extendClass":"DataModel",
+			   "dbRestrict":[
+			      {
+			         "colName":"itemNam",
+			         "type":"String",
+			         "length":200
+			      },
+			      {
+			         "colName":"roleId",
+			         "type":"String",
+			         "length":20
+			      },
+			      {
+			         "colName":"roleName",
+			         "type":"String",
+			         "length":50
+			      },
+			      {
+			         "colName":"userId",
+			         "type":"String",
+			         "length":10
+			      },
+			      {
+			         "colName":"userName",
+			         "type":"String",
+			         "length":50
+			      },
+			      {
+			         "colName":"menuId",
+			         "type":"Int"
+			      },
+			      {
+			         "colName":"roleMenuId",
+			         "type":"Int"
+			      },
+			      {
+			         "colName":"userRoleId",
+			         "type":"Int"
+			      },
+			      {
+			         "colName":"Action",
+			         "type":"String",
+			         "length":20
+			      }
+			   ]
+			}
 
 		`;
 
@@ -55,8 +83,8 @@ export class ConfigSettingComponent implements OnInit {
 
 
 	sendGenResultToGenerator(){
-		let genResult = this.generateServiceService.generateModel(this.inputValue)
-		console.log("=== sendGenResultToGenerator ===");
+		let genResult = this.generateService.generateModel(this.inputValue)
+		// console.log("=== sendGenResultToGenerator ===");
 		this.emitSpot.emit(genResult);
 
 	}

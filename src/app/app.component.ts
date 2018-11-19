@@ -6,19 +6,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-	title = 'app';
-
+	title = 'ModelClassGeneratorWeb';
 	public genResult = '';
 
-	getGenResultHandler($event){
-		console.log('=== getGenResultHandler ===')
-		console.log($event)
-		this.genResult = $event;
-
-
-		console.log('this.genResult')
-		console.log(this.genResult);
+	getGenResultHandler($event){ 
+		this.genResult = $event; 
 	}
-
-
 }
